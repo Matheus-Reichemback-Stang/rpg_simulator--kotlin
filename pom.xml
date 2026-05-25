@@ -78,6 +78,13 @@
 			<artifactId>kotlin-test-junit5</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- WebSocket: permite comunicação bidirecional em tempo real entre servidor e cliente.
+     		É isso que vai fazer o chat funcionar sem precisar ficar "recarregando" a página.
+     		O Spring Boot usa o protocolo STOMP sobre WebSocket para organizar as mensagens. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
