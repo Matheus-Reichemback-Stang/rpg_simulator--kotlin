@@ -1,5 +1,7 @@
 package rpg.simulator.application.model
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
 import jakarta.persistence.DiscriminatorType
@@ -38,6 +40,42 @@ qual é a classe do personagem salvo (Guerreiro, Mago, etc.).*/
 /* @DiscriminatorValue - Vai nas classes Filhas e na classe Pai. Ela define qual o texto exato que o JPA vai escrever na
 coluna discriminadora quando salvar aquele tipo específico.*/
 @DiscriminatorValue("PersonagemBase")
+
+/* Essas duas anotações pertencem à biblioteca Jackson, que é o motor interno do Spring Boot responsável por transformar JSON (texto)
+ * em Objetos Kotlin (e vice-versa). O objetivo geral delas é ensinar o Spring a lidar com o Polimorfismo no JSON. Elas dizem ao Jackson:
+ * "Não crie apenas a classe mãe genérica; olhe para o texto do JSON, descubra qual é o tipo do herói e instancie a classe filha correta".
+ *
+ * Como o endpoint do Controller recebe a classe abstrata/mãe Personagem, o Jackson por padrão não sabe qual filho instanciar. Usamos o
+ * @JsonTypeInfo para definir que a propriedade "tipo_personagem" do JSON guiará essa escolha, e o @JsonSubTypes para mapear quais strings
+ * correspondem a quais subclasses Kotlin. Isso garante que os atributos específicos de cada herói sejam processados corretamente
+ *
+ * @JsonTypeInfo - Esta anotação configura como o Jackson vai identificar o tipo da classe dentro do JSON.
+ * 1 - use = JsonTypeInfo.Id.NAME -> Diz que vamos usar um nome lógico em formato de texto (uma String) para identificar a classe filha, em
+ * vez de usar o caminho completo do arquivo físico do Kotlin.
+ * 2 - include = JsonTypeInfo.As.PROPERTY -> Define que esse nome identificador vai vir como se fosse uma propriedade comum (uma chave) dentro
+ * do objeto JSON.
+ * 3 - property = "tipo_personagem" ->  É o nome exato da chave que você vai escrever no Postman. Quando o Jackson ler "tipo_personagem": "Guerreiro",
+ * ele saberá que essa linha define o tipo do objeto.
+ * 4 - defaultImpl = Personagem::class -> É a rota de fuga. Se o jogador enviar um JSON sem a propriedade tipo_personagem, ou se escrever um tipo que não
+ * existe, o Jackson vai criar uma instância da classe mãe genérica (Personagem) para o sistema não quebrar.
+ * */
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "tipo_personagem", // Nome da propriedade que você vai enviar no JSON
+    defaultImpl = Personagem::class
+)
+/* @JsonSubTypes - Enquanto a primeira anotação diz onde procurar o tipo, esta aqui serve para mapear os nomes textuais para as classes Kotlin reais.
+É um dicionário de tradução para o Spring.
+
+Cada JsonSubTypes.Type faz uma ligação direta:
+value = Guerreiro::class, name = "Guerreiro" -> Se o texto na propriedade for "Guerreiro", instancie a classe Guerreiro.kt e capture os pontosDeDefesa.
+*/
+@JsonSubTypes(
+    JsonSubTypes.Type(value = Guerreiro::class, name = "Guerreiro"),
+    JsonSubTypes.Type(value = Mago::class, name = "Mago"),
+    JsonSubTypes.Type(value = Ladino::class, name = "Ladino")
+)
 open class Personagem (
     // @Id - Define qual campo da sua classe será a Chave Primária (Primary Key) da tabela.
     @Id

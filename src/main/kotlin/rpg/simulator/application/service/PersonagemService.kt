@@ -37,7 +37,7 @@ class PersonagemService (
     private val personagemRepository: PersonagemRepository
 ){
     // Regra para Salvar (Atende ao POST)
-    fun salvarPeronsagem(personagem: Personagem): Personagem {
+    fun salvarPersonagem(personagem: Personagem): Personagem {
         /*.save() - Faz papel duplo no banco de dados e é extremamente inteligente:
         * Se o ID do personagem for zero ou nulo: O Spring entende que é um personagem novo.
         * Ele gera um comando SQL INSERT INTO tb_personagem (...) e o PostgreSQL cria o registro
@@ -62,7 +62,7 @@ class PersonagemService (
     }
 
     // Regra para Buscar Todos (Atende ao GET geral)
-    fun buscarTodos(personagem: Personagem): List<Personagem> {
+    fun buscarTodos(): List<Personagem> {
         /*.findAll() - Busca todos os registros da tabela. Nos bastidores, o Spring envia o comando
         * SELECT * FROM tb_personagem;. Ele pega todas as linhas que retornaram do PostgreSQL, converte
         * cada linha em um objeto Kotlin correspondente (Guerreiro, Mago ou Ladino) e te entrega tudo
@@ -71,7 +71,7 @@ class PersonagemService (
     }
 
     // Regra para Deletar (Atende ao DELETE)
-    fun deletarPersonagem(id: Int) {
+    fun deletarPersonagem(id: Int): Unit {
         /*.delete() ou .deleteById() - Responsável por remover o registro do banco. Ele gera o comando
          * SQL DELETE FROM tb_personagem WHERE id = ?;. A linha correspondente àquele personagem deixa
          * de existir no seu PostgreSQL instantaneamente.*/
