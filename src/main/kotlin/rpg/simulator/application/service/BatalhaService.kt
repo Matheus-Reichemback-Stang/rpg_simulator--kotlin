@@ -3,6 +3,8 @@ package rpg.simulator.application.service
 import org.springframework.stereotype.Service
 import rpg.simulator.application.model.Personagem
 
+/* Essas duas data class abaixo se encaixam na função de DTO também */
+
 // Classe que carrega o resultado de uma rodada de batalha.
 // Usamos 'data class' pois ela serve apenas para transportar dados — sem lógica.
 // Será convertida automaticamente para JSON pelo Spring ao retornar no Controller.
@@ -25,19 +27,19 @@ data class ResultadoBatalha(
 
 @Service
 class BatalhaService(
-    // Injeção do PersonagemService para buscar os personagens do banco pelo ID
+    // Injeção (DI) do PersonagemService para buscar os personagens do banco pelo ID
     private val personagemService: PersonagemService
 ) {
 
     /*
-     * Método principal que executa a batalha completa entre dois personagens.
+     * Metodo principal que executa a batalha completa entre dois personagens.
      * Recebe os IDs dos dois personagens, busca eles no banco de dados,
      * e simula o combate até que um deles chegue a 0 (ou menos) de vida.
      *
      * O combate funciona em rodadas:
      * - O personagem mais rápido (maior velocidade) sempre ataca primeiro
-     * - O ataque usa o método atacar() da classe Personagem (herdado por todos)
-     * - A defesa usa o método defender() da classe Personagem
+     * - O ataque usa o metodo atacar() da classe Personagem (herdado por todos)
+     * - A defesa usa o metodo defender() da classe Personagem
      * - O dano real = valor do ataque - valor da defesa (mínimo 1, para sempre causar algum dano)
      * - A batalha para quando algum personagem chega a vida <= 0
      */
@@ -57,13 +59,15 @@ class BatalhaService(
 
         var numeroRodada = 1
 
+        // Boolean que vai controlar os turnos da batalha, mas sempre iniciando a batalha
+        // com o personagem com maior velocidade
+        var vezDoPersonagem1 = personagem1.velocidade >= personagem2.velocidade;
+
         // Loop da batalha: continua enquanto os dois personagens ainda estiverem vivos
         while (vidaAtual1 > 0 && vidaAtual2 > 0) {
 
-            // Determinamos quem ataca primeiro baseado na velocidade
-            // O mais rápido tem vantagem de atacar antes nesta rodada
             val (atacante, defensor, vidaAtacante, vidaDefensor) =
-                if (personagem1.velocidade >= personagem2.velocidade) {
+                if (vezDoPersonagem1) {
                     // Personagem 1 é mais rápido ou empatou — ele ataca primeiro
                     arrayOf(personagem1, personagem2, vidaAtual1, vidaAtual2)
                 } else {
@@ -81,6 +85,11 @@ class BatalhaService(
 
             // Calculamos o dano real causado. O 'coerceAtLeast(1)' garante dano mínimo de 1
             // (para que a batalha não fique presa caso o defensor seja muito forte)
+            /* .coerceAtLeast(1) - É uma função utilitária matemática muito elegante do Kotlin.
+             * Ela impede que o número caia abaixo do limite estipulado. Se o ataque for 10 e a
+             * defesa for 15, a conta daria -5. O .coerceAtLeast(1) intercepta e força o resultado
+             * a ser 1. Isso evita que o defensor "ganhe vida" ao ser atacado e impede batalhas
+             * infinitas.*/
             val danoCausado = (valorAtaque - valorDefesa).coerceAtLeast(1)
 
             // Subtraímos o dano da vida atual do defensor
@@ -109,6 +118,9 @@ class BatalhaService(
                     vencedor = vencedorDaRodada
                 )
             )
+
+            // Invertendo a vez no turno
+            vezDoPersonagem1 = !vezDoPersonagem1;
 
             // Se alguém morreu, saímos do loop
             if (novaVidaDefensor <= 0) break
