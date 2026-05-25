@@ -1,14 +1,18 @@
 package rpg.simulator.application.model
 
+import jakarta.persistence.DiscriminatorValue
+import jakarta.persistence.Entity
 import kotlin.random.Random
 
+@Entity
+@DiscriminatorValue("Ladino")
 class Ladino(
-    id: Int,
+    id: Int = 0,
     nome: String,
     forca: Int,
     velocidade: Int,
     vida: Int,
-    var sagacidade: Int
+    var sagacidade: Int = 0
 ):Personagem(id=id, nome=nome, forca=forca, velocidade=velocidade, vida=vida) {
 
     /*

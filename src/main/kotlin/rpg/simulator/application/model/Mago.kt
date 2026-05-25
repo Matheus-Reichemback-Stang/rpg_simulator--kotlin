@@ -1,12 +1,17 @@
 package rpg.simulator.application.model
 
+import jakarta.persistence.DiscriminatorValue
+import jakarta.persistence.Entity
+
+@Entity
+@DiscriminatorValue("Mago")
 class Mago (
-    id: Int,
+    id: Int = 0,
     nome: String,
     forca: Int,
     velocidade: Int,
     vida: Int,
-    var pontosDeMagia: Int
+    var pontosDeMagia: Int = 0
 ): Personagem(id, nome, forca, velocidade, vida) {
 
     /*
