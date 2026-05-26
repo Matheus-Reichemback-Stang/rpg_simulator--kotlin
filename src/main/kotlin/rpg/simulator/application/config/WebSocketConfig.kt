@@ -82,6 +82,6 @@ class WebSocketConfig : WebSocketMessageBrokerConfigurer {
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint("/ws-chat")
             .setAllowedOriginPatterns("*")
-            .withSockJS()
+            //.withSockJS()
     }
 }
