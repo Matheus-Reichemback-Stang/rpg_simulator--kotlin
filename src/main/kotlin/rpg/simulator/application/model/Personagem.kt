@@ -110,7 +110,7 @@ open class Personagem (
     * de adicionar um bônus de forca caso a variável numeroSortido
     * seja igual a variável numeroDoBonus que também é aleatória
     * */
-    fun atacar(): Int {
+    open fun atacar(): Int {
         val numeroDoBonus: Int = Random.nextInt(1, 21)
         val numeroSortido: Int = Random.nextInt(1, 21)
 
@@ -129,7 +129,7 @@ open class Personagem (
     * de adicionar um bônus de velocidade caso a vairável numeroSortido
     * seja igual a variável numeroDoBonus que também é aleatória
     * */
-    fun defender(): Int {
+    open fun defender(): Int {
         val numeroDoBonus: Int = Random.nextInt(1, 21)
         val numeroSortido: Int = Random.nextInt(1, 21)
 
