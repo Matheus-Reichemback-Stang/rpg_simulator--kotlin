@@ -29,7 +29,8 @@ o código fica gigante e difícil de manter. O Controller deve apenas "receber a
 Quem calcula se o personagem tem pontos de magia suficientes, quem executa as funções atacar() e defender(), e quem
 decide o vencedor é a camada de Serviço.*/
 
-/* @Service - Avisa ao Spring que esta classe contém as regras de negócio do RPG
+/* @Service - Indica ao Spring que esta classe gerencia lógica de negócio e processamento de dados. O Spring cria uma
+ * instância única dela (Singleton) para servir a toda a aplicação.
 * Ela diz ao Component Scan: "Registre esta classe como um componente de serviço nos bastidores".*/
 @Service
 class PersonagemService (
