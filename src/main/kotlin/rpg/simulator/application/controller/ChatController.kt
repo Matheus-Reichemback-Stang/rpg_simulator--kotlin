@@ -1,5 +1,6 @@
 package rpg.simulator.application.controller
 
+import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.SendTo
 import org.springframework.web.bind.annotation.GetMapping
@@ -7,7 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import rpg.simulator.application.dto.MensagemChat
+import rpg.simulator.application.dto.SalaBatalha
 import rpg.simulator.application.service.ChatService
+import rpg.simulator.application.service.MesaJogoService
 
 /*
  * ChatController usa DOIS tipos de comunicação ao mesmo tempo:
@@ -31,7 +34,8 @@ import rpg.simulator.application.service.ChatService
 @RequestMapping("/chat")
 class ChatController(
     // Injeção de Dependência e Inversão de Controle
-    private val chatService: ChatService
+    private val chatService: ChatService,
+    private val mesaJogoService: MesaJogoService
 ) {
 
     /*
@@ -90,5 +94,29 @@ class ChatController(
     @GetMapping("/salas")
     fun listarSalas(): List<String> {
         return chatService.listarSalas()
+    }
+
+    // Esta anotação define a "porta de entrada" do WebSocket para as escolhas de personagens.
+    // Quando o jogador enviar os dados, o endereço de destino (ou destination) no STOMP deve
+    // começar com /app (definido no WebSocketConfig), ficando: /app/escolher/sala-1.
+    @MessageMapping("/escolher/{sala}")
+    // Esta é a antena de transmissão em massa (Broadcast). Assim que o metodo terminar de processar
+    // as escolhas e o resultado da batalha for gerado, o Spring vai pegar o objeto de retorno (SalaBatalha)
+    // e jogá-lo automaticamente no canal /topic/sala/sala-1. Ambos os jogadores que estiverem conectados e
+    // "ouvindo" esse tópico receberão a atualização exatamente no mesmo milissegundo.
+    @SendTo("/topic/sala/{sala}")
+    fun escolherPersonagem(
+        @DestinationVariable sala: String,
+        // O payload é o corpo da mensagem enviado pelo jogador. Em vez de criarmos uma classe só para isso,
+        // usamos um mapa genérico de Chave e Valor para receber o JSON de forma direta e flexível.
+        payload: Map<String, String>
+    ): SalaBatalha {
+        // Resgatando o nome do jogador enviado pelo payload
+        val jogador = payload["jogador"] ?: "Anonimo"
+        // Resgatando o idPersonagem enviado pelo payload
+        val idPersonagem = payload["idPersonagem"]?.toInt() ?: 0
+
+        // Registra a escolha e já processa a batalha se os dois estiverem prontos
+        return mesaJogoService.registrarEscolha(sala, jogador, idPersonagem)
     }
 }
